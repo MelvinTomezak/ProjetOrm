@@ -1,4 +1,29 @@
 {
+    "name": "melvin-tomezak/projet-orm",
+    "description": "Projet ORM",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "FatimDicko",
+            "email": "dickoanna6@gmail.com"
+        },
+        {
+            "name": "MelvinTomezak",
+            "email": "melvin.tomezak@ynov.com"
+        },
+        {
+            "name": "FayrouzSaadaoui",
+            "email": "fayrouz.saadaoui@ynov.com"
+        }
+    ],
+    "require": {
+      "ext-pdo": "*",
+        "psr/log": "^3.0"
+    },
     "require-dev": {
         "phpstan/phpstan": "^2.0",
         "squizlabs/php_codesniffer": "^3.11"
