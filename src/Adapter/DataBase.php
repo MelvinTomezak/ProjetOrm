@@ -18,7 +18,6 @@ class DataBase {
         $this->username = $username;
     }
 
-
     public function getUrl(): string {
         return $this->url;
     }

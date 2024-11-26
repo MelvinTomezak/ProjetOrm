@@ -3,7 +3,7 @@
         'name' => 'melvin-tomezak/projet-orm',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '2260262dc9bb3bda6fac6b809d62d413bbde9511',
+        'reference' => '577f3167ece88fe4932e805f2886579e0ca7d3cc',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'melvin-tomezak/projet-orm' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '2260262dc9bb3bda6fac6b809d62d413bbde9511',
+            'reference' => '577f3167ece88fe4932e805f2886579e0ca7d3cc',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -27,6 +27,15 @@
             'install_path' => __DIR__ . '/../phpstan/phpstan',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'psr/log' => array(
+            'pretty_version' => '3.0.2',
+            'version' => '3.0.2.0',
+            'reference' => 'f16e1d5863e37f8d8c2a01719f5b34baa2b714d3',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../psr/log',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'squizlabs/php_codesniffer' => array(
             'pretty_version' => '3.11.1',

@@ -21,7 +21,8 @@
         }
     ],
     "require": {
-      "ext-pdo": "*"
+      "ext-pdo": "*",
+        "psr/log": "^3.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.0",
