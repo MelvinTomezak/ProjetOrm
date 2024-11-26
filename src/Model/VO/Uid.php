@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Src\Model\VO; 
+namespace App\Model\VO;
 
 
 //VO contient les objets valeur donc ici 'Uid'
