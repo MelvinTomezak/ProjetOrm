@@ -1,0 +1,49 @@
+<?php 
+
+namespace src;
+
+use src\Repository\NewsRepository;
+use src\Model\News;
+use src\Model\VO\Uid;
+
+// le manager est le point d'entrée de l'orm. 
+//gère les entités 
+class NewsEntityManager {
+
+    private NewsRepository $newsRepository;
+
+    public function __construct (NewsRepository $newsRepository)
+    {
+        $this-> newsRepository = $newsRepository;
+    }
+
+
+    //Méthode pour récupérer une news via son Uid
+    public function getById (Uid $uid) : ?News
+    {
+        return $this -> newsRepository -> findById($uid);
+    }
+
+
+    // méthode pour insérer une nouvelle news
+    public function create (News $news): News 
+    {
+        $this -> newsRepository -> save ($news);
+        return $news;
+    }
+
+
+    // méthode pour mettre à jour une news
+    public function update (News $news) : News
+    {
+        $this -> newsRepository -> update($news); 
+        return $news;
+    }
+
+    //méthode pour supprimer une news
+    public function delete (News $news) : void 
+    {
+        $this -> newsRepository -> delete($news);
+    }
+
+}
