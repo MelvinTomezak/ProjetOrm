@@ -17,13 +17,13 @@ class QueryBuilderImpl implements QueryBuilder {
         return "INSERT INTO $table($queries[0]) VALUES($queries[1]);" ;
     }
 
-    public function delete(object $object): string {
+    public function delete(object $object, string $table): string {
         return '';
     }
 
-    public function update(object $object): string {
+    public function update(object $object, string $table): string {
 
-        return '';
+        return "UPDATE $table set ";
     }
 
     public function findAll(string $table): string {
@@ -41,25 +41,25 @@ class QueryBuilderImpl implements QueryBuilder {
         foreach ($properties as $property) {
             $property->setAccessible(true);
 
-            if ($property->isInitialized($object)) {
+            if ($property->isInitialized($object) && $property->getType()->getName() != "Uid") {
                 $columns[] = $property->getName();
 
+                $value = null;
                 $type = $property->getType()->getName();
                 switch ($type){
                     case 'int':
                     case 'float':
                         $value = $property->getValue($object);
-                        $values[] = $value;
                         break;
                     case 'DateTime':
                         $value = $property->getValue($object) instanceof DateTime ? $property->getValue($object)->format('Y-m-d H:i:s') : null;
-                        $values[] = $value;
                         break;
                     case 'string':
                     default:
                         $value = "'". $property->getValue($object) . "'";
-                        $values[] = $value;
                 }
+
+
             }
         }
 
