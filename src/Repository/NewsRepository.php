@@ -3,6 +3,7 @@
 namespace src\Repository;
 
 use Src\Adapter\AdapterInterface; 
+use src\NewsEntityManager;
 use Src\Query\EntityBuilder;
 use Src\Model\News;
 use Src\Model\VO\Uid;
@@ -13,22 +14,22 @@ use Src\Model\VO\Uid;
 class NewsRepository implements RepositoryInterface
 { 
     private AdapterInterface $adapter;
-    private EntityBuilder $builder;
+    private NewsEntityManager $entityManager;
 
-    public function __construct (AdapterInterface $adapter, EntityBuilder $builder){
+    public function __construct (AdapterInterface $adapter, EntityBuilder $builder, NewsEntityManager $entityManager){
         $this -> adapter = $adapter;
-        $this -> builder = $builder;
+        $this ->entityManager = $entityManager;
     }
 
     public function findById (Uid $id): ?News {
 
-        $query = "Select * FROM news WHERE id = id";
+        $query = EntityBuilder :: getById();
         $result = $this->adapter->query($query, ['id' => $id->getValue()]);
 
         if (empty ($result)){
             return null;
         }
-        return $this->builder->build(News:: class, $result[0]);
+        return $this->entityManager->build(News:: class, $result[0]);
     }
 
 
@@ -38,11 +39,12 @@ class NewsRepository implements RepositoryInterface
             throw new \InvalidArgumentException('Invalid entity type, exepcted News');
         }
 
-        $query = "INSERT INTO news (id, content, created_at) VALUES (:id, : content, :created_at)";
-        $this-> adapter -> execute ($query, [
+        $query = NewsQuery :: save();
+
+        $this->adapter->execute($query, [
             'id' => $entity->getId()->getValue(),
-            'content'=> $entity->getContent(),
-            'created_at' => $entity->getCreatedAt()->format('Y-m-d H:i:s'),
+            'content' => $entity-> getContent(),
+            'created_at' => $entity->getCreatedAt()-> format('Y-m-d H:i:s')
         ]);
     }
 
@@ -51,12 +53,13 @@ class NewsRepository implements RepositoryInterface
             throw new \InvalidArgumentException('Invalid entity type, expected News.');
         }
 
-        $query = "UPDATE news SET content = :content, created_at = :created_at WHERE id= :id";
-        $this -> adapter -> execute ($query, [
-            'id'=> $entity -> getId()->getValue(),
-            'content'=> $entity ->getContent(),
-            'created_at' => $entity->getCreatedAt() -> format('Y-m-d H:i:s'),
-        ]); 
+        $query = NewsQuery:: update();
+
+$this->adapter->execute($query, [
+    'id' => $entity->getId()-> getValue(),
+    'content'=> $entity->getContent(),
+    'created_at'=> $entity->getCreatedAt()->format('Y-m-d H:i:s')
+]);
     }
     public function delete (object $entity) : void {
 
@@ -64,9 +67,9 @@ class NewsRepository implements RepositoryInterface
             throw new \InvalidArgumentException('Invalid entity type, expected News.');
         }
 
-        $query = "DELETE FROM news WHERE id = :id";
-        $this->adapter->execute ($query, [
-            'id'=> $entity->getId()->getValue(),
-        ]);
+        $query = NewsQuery::delete();
+       $this->adapter->execute($query,[
+        'id' => $entity->getId()->getValue(),
+       ]);
     }
 }
