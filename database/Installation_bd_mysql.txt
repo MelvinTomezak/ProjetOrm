@@ -1,0 +1,25 @@
+------------ Installation Bdd Avec Docker ------------
+
+1 - docker-compose up -d
+
+2 - docker exec -it my-mysql-container mysql -u root -p
+// Mdp = password
+
+// On afficher les bdd
+
+3 - SHOW DATABASES;
+
+// On choisis la base de donnée
+
+4 - USE ormdatabase;
+
+// On affiche les tables
+
+5 - SHOW TABLES;
+
+// On affiche la table détaillés 
+
+6 - DESCRIBE `Table News`;
+ 
+// Après cette étape il devrait y avoir id, content, ...
+

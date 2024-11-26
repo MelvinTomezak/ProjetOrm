@@ -1,0 +1,24 @@
+version: '3'
+services:
+  db:
+    image: mysql:latest
+    container_name: my-mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: password      
+      MYSQL_DATABASE: ormdatabase          
+      MYSQL_USER: user                     
+      MYSQL_PASSWORD: password             
+    ports:
+      - "3306:3306"                        
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  
+      - db-data:/var/lib/mysql                          
+    networks:
+      - my-network
+
+volumes:
+  db-data:   # Définition du volume pour les données MySQL
+
+networks:
+  my-network:
+    driver: bridge  # Utilisation du réseau bridge
