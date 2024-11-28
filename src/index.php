@@ -13,4 +13,4 @@ $news->setContent('contenu');
 //$news->setId($uuid);
 
 $queryImpl = new QueryBuilderImpl();
-echo $queryImpl->save($news, 'news');
+echo $queryImpl->update($news, 'news');

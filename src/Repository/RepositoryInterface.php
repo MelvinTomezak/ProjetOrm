@@ -2,7 +2,7 @@
 
 namespace Src\Repository;
 
-use src\Model\VO\Uid; 
+use App\Model\VO\Uid;
 
 //repository gère les interactions avec la bd pour News. 
 interface RepositoryInterface

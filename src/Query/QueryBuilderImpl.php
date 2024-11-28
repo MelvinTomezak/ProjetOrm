@@ -2,19 +2,19 @@
 
 namespace App\Query;
 
+use App\Model\VO\Uid;
 use DateTime;
 use ReflectionClass;
-use ReflectionProperty;
 
 class QueryBuilderImpl implements QueryBuilder {
-
-    private array $columns;
-    private array $values;
 
     public function save(object $object, string $table): string {
         $queries = $this->generate($object);
 
-        return "INSERT INTO $table($queries[0]) VALUES($queries[1]);" ;
+        $columns = implode(',', $queries[0]);
+        $values = implode(',', $queries[1]);
+
+        return "INSERT INTO $table($columns) VALUES($values);" ;
     }
 
     public function delete(object $object, string $table): string {
@@ -22,12 +22,19 @@ class QueryBuilderImpl implements QueryBuilder {
     }
 
     public function update(object $object, string $table): string {
+        $columns = $this->generate($object)[0];
+        $values = $this->generate($object)[1];
 
-        return "UPDATE $table set ";
+        $value = "";
+        foreach ($columns as $index => $column){
+            $value = $value . $column . " = " . $values[$index] . ",";
+        }
+
+        return "UPDATE $table set $value";
     }
 
-    public function findAll(string $table): string {
-        return "select * from $table";
+    public function findById(Uid $id, string $table): string {
+        return "";
     }
 
     private function generate(object $object) : array {
@@ -59,15 +66,12 @@ class QueryBuilderImpl implements QueryBuilder {
                         $value = "'". $property->getValue($object) . "'";
                 }
 
-
+                $values[] = $value;
             }
         }
 
-        $columnsString = implode(', ', $columns);
-        $valuesString = implode(', ', $values);
-
-        $result[] = $columnsString;
-        $result[] = $valuesString;
+        $result[] = $columns;
+        $result[] = $values;
 
         return $result;
     }

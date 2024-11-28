@@ -2,7 +2,6 @@
 
 namespace App\Adapter;
 
-use PDO;
 
 /**
  * Base de données
