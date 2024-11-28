@@ -1,8 +1,8 @@
 <?php
 
-namespace Src\Model;
+namespace App\Model;
 
-use src\Model\VO\Uid;
+use App\Model\VO\Uid;
 
 //entité 'News'
 
