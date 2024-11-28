@@ -1,75 +1,104 @@
 <?php
 
-namespace src\Repository;
+namespace App\Repository;
 
 use App\Adapter\DBAdapter;
+use App\Model\News;
+use App\Model\VO\Uid;
 use App\Query\QueryBuilder;
-use src\Model\News;
-use src\Model\VO\Uid;
+use Src\Repository\RepositoryInterface;
 
 class NewsRepository implements RepositoryInterface
 {
-    private DBAdapter $adapter;
     private QueryBuilder $queryBuilder;
+    private DBAdapter $dbAdapter;
 
-    public function __construct(DBAdapter $adapter, QueryBuilder $queryBuilder)
+    public function __construct(QueryBuilder $queryBuilder, DBAdapter $dbAdapter)
     {
-        $this->adapter = $adapter;
-        $this->queryBuilder = $queryBuilder;
+        $this->queryBuilder = $queryBuilder; 
+        $this->dbAdapter = $dbAdapter; 
     }
 
+    //Méthode pour enregistrer une entité News dans la base de données.
+     
+    public function save(object $entity): void
+    {
+        // Vérification que l'entité est bien de type News.
+        if (!$entity instanceof News) {
+            throw new \InvalidArgumentException("L'entité doit être une instance de News.");
+        }
+
+        // Utilisation du QueryBuilder pour créer la requête d'insertion.
+        $query = $this->queryBuilder->save($entity, 'news');
+        // Exécution de la requête via DBAdapter.
+        $this->dbAdapter->execute($query);
+    }
+
+    //Méthode pour mettre à jour une entité News dans la base de données.
+    public function update(object $entity): void
+    {
+        // Vérification que l'entité passée est bien de type News.
+        if (!$entity instanceof News) {
+            throw new \InvalidArgumentException("L'entité doit être une instance de News.");
+        }
+
+        // QueryBuilder pour créer la requête de mise à jour.
+        $query = $this->queryBuilder->update($entity, 'news');
+        // Exécution de la requête via DBAdapter.
+        $this->dbAdapter->execute($query);
+    }
+
+    //Méthode pour supprimer une entité News de la base de données.
+    public function delete(object $entity): void
+    {
+        // Vérification que l'entité passée est bien de type News.
+        if (!$entity instanceof News) {
+            throw new \InvalidArgumentException("L'entité doit être une instance de News.");
+        }
+
+        // Utilisation de l'ID de l'entité pour la suppression.
+        $id = $entity->getId();
+        $query = $this->queryBuilder->delete($entity, 'news');
+        $this->dbAdapter->execute($query);
+    }
+
+    //Méthode pour trouver une entité News par son ID.
     public function findById(Uid $id): ?News
     {
-        $query = $this->queryBuilder->findAll('news') . " WHERE id = :id";
-        $result = $this->adapter->query($query, ['id' => $id->getValue()]);
+        // Utilisation du QueryBuilder pour créer la requête de recherche par ID.
+        $query = $this->queryBuilder->findById($id, 'news');
+        $result = $this->dbAdapter->execute($query);
 
+        // Si aucun résultat n'est trouvé, on retourne null.
         if (empty($result)) {
             return null;
         }
 
-        return new News(
-            new Uid($result[0]['id']),
-            $result[0]['content'],
-            new \DateTime($result[0]['created_at'])
-        );
+        // Retourne l'entité News mappée depuis le résultat de la base de données.
+        return $this->mapRowToEntity($result[0]);
     }
 
-    public function save(object $entity): void
+    // Méthode pour trouver toutes les entités News.
+     
+    public function findAll(): array
     {
-        if (!$entity instanceof News) {
-            throw new \InvalidArgumentException('Invalid entity type, expected News.');
-        }
+        // Requête SQL simple pour récupérer toutes les actualités.
+        $query = "SELECT * FROM news";
+        $results = $this->dbAdapter->execute($query);
 
-        $query = $this->queryBuilder->save($entity, 'news');
-        $this->adapter->execute($query, $this->extractParameters($entity));
+        // Conversion de chaque résultat en une instance de News et retour du tableau.
+        return array_map([$this, 'mapRowToEntity'], $results);
     }
 
-    public function update(object $entity): void
+    // Méthode privée pour mapper un tableau associatif à une instance de News.
+  
+    private function mapRowToEntity(array $row): News
     {
-        if (!$entity instanceof News) {
-            throw new \InvalidArgumentException('Invalid entity type, expected News.');
-        }
+        $news = new News(); // Création d'une nouvelle instance de News.
+        $news->setId(new Uid($row['id'])); // Initialisation de l'ID de l'entité avec un objet Uid.
+        $news->setContent($row['content']); // Initialisation du contenu de l'entité.
+        $news->setCreatedAt(new \DateTimeImmutable($row['created_at'])); // Initialisation de la date de création.
 
-        $query = $this->queryBuilder->update($entity);
-        $this->adapter->execute($query, $this->extractParameters($entity));
-    }
-
-    public function delete(object $entity): void
-    {
-        if (!$entity instanceof News) {
-            throw new \InvalidArgumentException('Invalid entity type, expected News.');
-        }
-
-        $query = $this->queryBuilder->delete($entity);
-        $this->adapter->execute($query, ['id' => $entity->getId()->getValue()]);
-    }
-
-    private function extractParameters(News $news): array
-    {
-        return [
-            'id' => $news->getId()->getValue(),
-            'content' => $news->getContent(),
-            'created_at' => $news->getCreatedAt()->format('Y-m-d H:i:s'),
-        ];
+        return $news; // Retour de l'entité construite.
     }
 }

@@ -1,49 +1,59 @@
-<?php 
+<?php
 
-namespace src;
+namespace App\Manager;
 
-use src\Repository\NewsRepository;
-use src\Model\News;
-use src\Model\VO\Uid;
+use App\Repository\NewsRepository;
+use App\Model\News;
+use App\Model\VO\Uid;
+use InvalidArgumentException;
 
-// le manager est le point d'entrée de l'orm. 
-//gère les entités 
-class NewsEntityManager {
-
+class NewsEntityManager
+{
     private NewsRepository $newsRepository;
 
-    public function __construct (NewsRepository $newsRepository)
+    public function __construct(NewsRepository $newsRepository)
     {
-        $this-> newsRepository = $newsRepository;
+        $this->newsRepository = $newsRepository;
     }
 
-
-    //Méthode pour récupérer une news via son Uid
-    public function getById (Uid $uid) : ?News
+    public function createNews(string $content): News
     {
-        return $this -> newsRepository -> findById($uid);
-    }
+        $news = new News();
+        $news->setContent($content);
+        $news->setCreatedAt(new \DateTimeImmutable()); // Initialise la date de création
 
+        // Assure-toi que l'ID est généré avant la sauvegarde, par exemple, en utilisant un générateur d'ID.
+        $uid = new Uid(uniqid('news_', true));
+        $news->setId($uid);
 
-    // méthode pour insérer une nouvelle news
-    public function create (News $news): News 
-    {
-        $this -> newsRepository -> save ($news);
+        // Sauvegarde la nouvelle instance de News
+        $this->newsRepository->save($news);
+
         return $news;
     }
 
-
-    // méthode pour mettre à jour une news
-    public function update (News $news) : News
+    public function updateNews(News $news): void
     {
-        $this -> newsRepository -> update($news); 
-        return $news;
+        // Assure-toi que l'ID de l'entité existe avant de tenter de la mettre à jour
+        if ($news->getId() === null) {
+            throw new InvalidArgumentException("L'objet News doit avoir un ID pour être mis à jour.");
+        }
+
+        $this->newsRepository->update($news);
     }
 
-    //méthode pour supprimer une news
-    public function delete (News $news) : void 
+    public function deleteNews(Uid $id): void
     {
-        $this -> newsRepository -> delete($news);
+        $this->newsRepository->delete($id);
     }
 
+    public function findNewsById(Uid $id): ?News
+    {
+        return $this->newsRepository->findById($id);
+    }
+
+    public function getAllNews(): array
+    {
+        return $this->newsRepository->findAll();
+    }
 }
