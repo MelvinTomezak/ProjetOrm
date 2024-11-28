@@ -4,5 +4,5 @@ namespace App\Adapter;
 
 interface DBAdapter {
 
-    public function createConnection(DataBase $dataBase): void;
+    public function execute(string $query, array $parameters = []): array | int;
 }
