@@ -4,75 +4,129 @@ namespace App\Query;
 
 use App\Model\VO\Uid;
 use DateTime;
+use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionException;
 
 class QueryBuilderImpl implements QueryBuilder {
 
     public function save(object $object, string $table): string {
-        $queries = $this->generate($object);
-
-        $columns = implode(',', $queries[0]);
-        $values = implode(',', $queries[1]);
-
-        return "INSERT INTO $table($columns) VALUES($values);" ;
-    }
-
-    public function delete(object $object, string $table): string {
-        return '';
-    }
-
-    public function update(object $object, string $table): string {
-        $columns = $this->generate($object)[0];
-        $values = $this->generate($object)[1];
-
-        $value = "";
-        foreach ($columns as $index => $column){
-            $value = $value . $column . " = " . $values[$index] . ",";
-        }
-
-        return "UPDATE $table set $value";
-    }
-
-    public function findById(Uid $id, string $table): string {
-        return "";
-    }
-
-    private function generate(object $object) : array {
-        $result = [];
-
         $reflection = new ReflectionClass($object);
         $properties = $reflection->getProperties();
 
         $columns = [];
-        $values = [];
+        $placeholders = [];
+
         foreach ($properties as $property) {
             $property->setAccessible(true);
 
-            if ($property->isInitialized($object) && $property->getType()->getName() != "Uid") {
-                $columns[] = $property->getName();
+            if ($property->isInitialized($object)) {
+                $value = $property->getValue($object);
 
-                $value = null;
-                $type = $property->getType()->getName();
-                switch ($type){
-                    case 'int':
-                    case 'float':
-                        $value = $property->getValue($object);
-                        break;
-                    case 'DateTime':
-                        $value = $property->getValue($object) instanceof DateTime ? $property->getValue($object)->format('Y-m-d H:i:s') : null;
-                        break;
-                    case 'string':
-                    default:
-                        $value = "'". $property->getValue($object) . "'";
+                if (is_object($value)) {
+                    if ($value instanceof DateTime) {
+                        $value = $value->format('Y-m-d H:i:s'); // Format DateTime
+                    } elseif ($value instanceof \App\Model\VO\Uid) {
+                        $value = $value->getValue(); // Extraire la valeur de Uid
+                    } elseif (property_exists($value, 'id')) {
+                        $value = $value->id;
+                    } else {
+                        throw new InvalidArgumentException("La propriété {$property->getName()} contient un objet non gérable.");
+                    }
+                }
+                if(is_string($value)){
+                    $value = "'$value'";
                 }
 
-                $values[] = $value;
+                $columns[] = $property->getName();
+                $placeholders[] = $value;
             }
         }
 
-        $result[] = $columns;
-        $result[] = $values;
+        $columnsString = implode(', ', $columns);
+        $placeholdersString = implode(', ', $placeholders);
 
-        return $result;
+
+        return "INSERT INTO $table($columnsString) VALUES($placeholdersString);" ;
+    }
+
+
+    /**
+     * @throws ReflectionException
+     */
+    public function delete(object $object, string $table): string
+    {
+        $reflection = new ReflectionClass($object);
+        $idProperty = $reflection->getProperty('id');
+        $idProperty->setAccessible(true);
+
+        if (!$idProperty->isInitialized($object)) {
+            throw new InvalidArgumentException("L'objet à supprimer n'a pas d'ID initialisé.");
+        }
+
+        $id = $idProperty->getValue($object);
+
+        if ($id instanceof Uid) {
+            $id = $id->getValue();
+        }
+
+        return "DELETE FROM $table WHERE id = $id;";
+    }
+
+
+
+    public function update(object $object, string $table): string
+    {
+        $reflection = new ReflectionClass($object);
+        $properties = $reflection->getProperties();
+
+        $updates = [];
+        $idValue = null;
+
+        foreach ($properties as $property) {
+            $property->setAccessible(true);
+
+            if ($property->isInitialized($object)) {
+                $value = $property->getValue($object);
+
+                if ($property->getName() === 'id') {
+                    if ($value instanceof Uid) {
+                        $idValue = $value->getValue();
+                    } else {
+                        $idValue = $value;
+                    }
+                    continue;
+                }
+
+                if (is_object($value)) {
+                    if ($value instanceof DateTime) {
+                        $value = $value->format('Y-m-d H:i:s');
+                    } elseif ($value instanceof Uid) {
+                        $value = $value->getValue();
+                    } elseif (property_exists($value, 'id')) {
+                        $value = $value->id;
+                    } else {
+                        throw new InvalidArgumentException("La propriété {$property->getName()} contient un objet non gérable.");
+                    }
+                }
+
+                $updates[] = $property->getName() . ' = ' . $value;
+            }
+        }
+
+        if ($idValue === null) {
+            throw new InvalidArgumentException("L'objet à mettre à jour n'a pas d'ID.");
+        }
+
+        $updatesString = implode(', ', $updates);
+
+        return "UPDATE $table SET $updatesString WHERE id = $idValue;";
+    }
+
+
+    public function findById(Uid $id, string $table): string {
+        $value = $id->getValue();
+
+        return "SELECT * FROM $table WHERE id = $value";
     }
 }
