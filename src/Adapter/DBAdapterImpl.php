@@ -21,7 +21,7 @@ class DBAdapterImpl implements DBAdapter {
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
 
-        $this->connection = new PDO($dsn, $username, $password, $options);
+//        $this->connection = new PDO($dsn, $username, $password, $options);
     }
 
 

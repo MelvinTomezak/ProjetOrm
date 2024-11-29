@@ -2,58 +2,56 @@
 
 namespace App\Manager;
 
-use App\Repository\NewsRepository;
+use App\Adapter\DBAdapter;
+use App\Model\Entity;
 use App\Model\News;
+use App\Query\QueryBuilder;
+use App\Repository\NewsRepository;
 use App\Model\VO\Uid;
+use Exception;
 use InvalidArgumentException;
 
-class NewsEntityManager
-{
+class NewsEntityManager implements EntityManager {
     private NewsRepository $newsRepository;
+    private QueryBuilder $queryBuilder;
+    private DBAdapter $dbAdapter;
 
-    public function __construct(NewsRepository $newsRepository)
-    {
-        $this->newsRepository = $newsRepository;
+    public function __construct(QueryBuilder $queryBuilder, DBAdapter $dbAdapter) {
+        $this->newsRepository = NewsRepository::getInstance($queryBuilder, $dbAdapter);
+        $this->queryBuilder = $queryBuilder;
+        $this->dbAdapter = $dbAdapter;
     }
 
-    public function createNews(string $content): News
-    {
-        $news = new News();
-        $news->setContent($content);
-        $news->setCreatedAt(new \DateTimeImmutable()); // Initialise la date de création
-
-        // Assure-toi que l'ID est généré avant la sauvegarde, par exemple, en utilisant un générateur d'ID.
+    public function save(Entity $entity): void {
         $uid = new Uid(uniqid('news_', true));
-        $news->setId($uid);
+        $entity->setId($uid);
 
-        // Sauvegarde la nouvelle instance de News
-        $this->newsRepository->save($news);
-
-        return $news;
+        $query = $this->queryBuilder->save($entity, 'news');
+        $this->dbAdapter->execute($query);
     }
 
-    public function updateNews(News $news): void
-    {
-        // Assure-toi que l'ID de l'entité existe avant de tenter de la mettre à jour
-        if ($news->getId() === null) {
+
+    public function delete(Entity $entity): void {
+        $query = $this->queryBuilder->delete($entity, 'news');
+        $this->dbAdapter->execute($query);    }
+
+    public function update(Entity $entity): void {
+        if ($entity->getId() === null) {
             throw new InvalidArgumentException("L'objet News doit avoir un ID pour être mis à jour.");
         }
 
-        $this->newsRepository->update($news);
+        $query = $this->queryBuilder->update($entity, 'news');
+        $this->dbAdapter->execute($query);
     }
 
-    public function deleteNews(Uid $id): void
-    {
-        $this->newsRepository->delete($id);
-    }
-
-    public function findNewsById(Uid $id): ?News
-    {
+    /**
+     * @throws Exception
+     */
+    public function findById(Uid $id): ?Entity {
         return $this->newsRepository->findById($id);
     }
 
-    public function getAllNews(): array
-    {
+    public function findAll(): array|null {
         return $this->newsRepository->findAll();
     }
 }

@@ -24,7 +24,7 @@ class QueryBuilderImpl implements QueryBuilder {
                 $value = $property->getValue($object);
 
                 if (is_object($value)) {
-                    if ($value instanceof DateTime) {
+                    if ($value instanceof \DateTimeImmutable) {
                         $value = $value->format('Y-m-d H:i:s'); // Format DateTime
                     } elseif ($value instanceof \App\Model\VO\Uid) {
                         $value = $value->getValue(); // Extraire la valeur de Uid
@@ -128,5 +128,9 @@ class QueryBuilderImpl implements QueryBuilder {
         $value = $id->getValue();
 
         return "SELECT * FROM $table WHERE id = $value";
+    }
+
+    public function findAll(string $table): string {
+        return "SELECT * FROM $table";
     }
 }
