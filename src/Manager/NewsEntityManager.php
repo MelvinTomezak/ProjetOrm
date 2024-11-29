@@ -1,10 +1,10 @@
 <?php
 
-namespace Src\Manager;
+namespace App\Manager;
 
-use Src\Repository\NewsRepository;
-use Src\Model\News;
-use Src\Model\VO\Uid;
+use App\Repository\NewsRepository;
+use App\Model\News;
+use App\Model\VO\Uid;
 use InvalidArgumentException;
 
 class NewsEntityManager
