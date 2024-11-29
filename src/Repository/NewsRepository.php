@@ -6,7 +6,7 @@ use App\Adapter\DBAdapter;
 use App\Model\News;
 use App\Model\VO\Uid;
 use App\Query\QueryBuilder;
-use Src\Repository\RepositoryInterface;
+use App\Repository\RepositoryInterface;
 
 class NewsRepository implements RepositoryInterface
 {
