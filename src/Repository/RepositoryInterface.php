@@ -1,6 +1,6 @@
 <?php 
 
-namespace Src\Repository;
+namespace App\Repository;
 
 use App\Model\VO\Uid;
 
